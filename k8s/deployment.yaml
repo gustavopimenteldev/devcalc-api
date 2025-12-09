@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devcalc-api
+  labels:
+    app: devcalc-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devcalc-api
+  template:
+    metadata:
+      labels:
+        app: devcalc-api
+    spec:
+      containers:
+        - name: devcalc-api
+          image: gustavobrumpimentel/devcalc-api:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 7000
+            initialDelaySeconds: 15
+            periodSeconds: 20
