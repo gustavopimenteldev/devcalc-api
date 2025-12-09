@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: devcalc-postgres
+    environment:
+      POSTGRES_USER: devcalc
+      POSTGRES_PASSWORD: devcalc
+      POSTGRES_DB: devcalcdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - shared-data:/shared
+    networks:
+      - devcalc-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devcalc"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: devcalc-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - shared-data:/shared
+    networks:
+      - devcalc-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  busybox-test:
+    image: busybox:1.37
+    container_name: devcalc-busybox
+    command: sh -c "sleep 3600"
+    networks:
+      - devcalc-net
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - shared-data:/shared
+
+networks:
+  devcalc-net:
+
+volumes:
+  db-data:
+  shared-data:
